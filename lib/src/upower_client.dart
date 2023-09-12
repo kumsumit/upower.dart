@@ -254,20 +254,20 @@ class UPowerDevice {
   Future<List<UPowerDeviceHistoryRecord>> getHistory(
       String type, int resolution,
       {int timespan = 0}) async {
-    var result = await _object.callMethod(
+    final result = await _object.callMethod(
         'org.freedesktop.UPower.Device',
         'GetHistory',
         [DBusString(type), DBusUint32(timespan), DBusUint32(resolution)],
         replySignature: DBusSignature('a(udu)'));
-    var records = <UPowerDeviceHistoryRecord>[];
-    var children = (result.returnValues[0] as DBusArray)
+    final records = <UPowerDeviceHistoryRecord>[];
+    final children = (result.returnValues[0] as DBusArray)
         .children
         .map((e) => e as DBusStruct);
-    for (var child in children) {
-      var values = child.children.toList();
-      var time = (values[0] as DBusUint32).value;
-      var value = (values[1] as DBusDouble).value;
-      var state = UPowerDeviceState.values[(values[2] as DBusUint32).value];
+    for (final child in children) {
+      final values = child.children.toList();
+      final time = (values[0] as DBusUint32).value;
+      final value = (values[1] as DBusDouble).value;
+      final state = UPowerDeviceState.values[(values[2] as DBusUint32).value];
       records.add(UPowerDeviceHistoryRecord(time, value, state));
     }
     return records;
@@ -275,17 +275,17 @@ class UPowerDevice {
 
   /// Gets statistics on this device of [type] ('charging', 'discharging').
   Future<List<UPowerDeviceStatisticsRecord>> getStatistics(String type) async {
-    var result = await _object.callMethod(
+    final result = await _object.callMethod(
         'org.freedesktop.UPower.Device', 'GetStatistics', [DBusString(type)],
         replySignature: DBusSignature('a(dd)'));
-    var records = <UPowerDeviceStatisticsRecord>[];
-    var children = (result.returnValues[0] as DBusArray)
+    final records = <UPowerDeviceStatisticsRecord>[];
+    final children = (result.returnValues[0] as DBusArray)
         .children
         .map((e) => e as DBusStruct);
-    for (var child in children) {
-      var values = child.children.toList();
-      var value = (values[0] as DBusDouble).value;
-      var accuracy = (values[1] as DBusDouble).value;
+    for (final child in children) {
+      final values = child.children.toList();
+      final value = (values[0] as DBusDouble).value;
+      final accuracy = (values[1] as DBusDouble).value;
       records.add(UPowerDeviceStatisticsRecord(value, accuracy));
     }
     return records;
@@ -345,7 +345,7 @@ class UPowerKbdBacklight {
 
   /// Get the current keyboard backlight brightness level.
   Future<int> getBrightness() async {
-    var result = await _object.callMethod(
+    final result = await _object.callMethod(
         'org.freedesktop.UPower.KbdBacklight', 'GetBrightness', [],
         replySignature: DBusSignature('i'));
     return (result.returnValues[0] as DBusInt32).value;
@@ -353,7 +353,7 @@ class UPowerKbdBacklight {
 
   /// Get the maximum keyboard backlight brightness level.
   Future<int> getMaxBrightness() async {
-    var result = await _object.callMethod(
+    final result = await _object.callMethod(
         'org.freedesktop.UPower.KbdBacklight', 'GetMaxBrightness', [],
         replySignature: DBusSignature('i'));
     return (result.returnValues[0] as DBusInt32).value;
@@ -454,21 +454,21 @@ class UPowerClient {
     });
     _updateProperties(await _root.getAllProperties('org.freedesktop.UPower'));
 
-    var deviceAdded = DBusRemoteObjectSignalStream(
+    final deviceAdded = DBusRemoteObjectSignalStream(
         object: _root,
         interface: 'org.freedesktop.UPower',
         name: 'DeviceAdded');
     _deviceAddedSubscription = deviceAdded
         .listen((signal) => _deviceAdded((signal.values[0] as DBusObjectPath)));
-    var deviceRemoved = DBusRemoteObjectSignalStream(
+    final deviceRemoved = DBusRemoteObjectSignalStream(
         object: _root,
         interface: 'org.freedesktop.UPower',
         name: 'DeviceRemoved');
     _deviceRemovedSubscription = deviceRemoved.listen(
         (signal) => _deviceRemoved((signal.values[0] as DBusObjectPath)));
 
-    var devicePaths = await _enumerateDevices();
-    for (var path in devicePaths) {
+    final devicePaths = await _enumerateDevices();
+    for (final path in devicePaths) {
       await _deviceAdded(path);
     }
 
@@ -477,7 +477,7 @@ class UPowerClient {
 
   /// Gets the action the system will take when the power supply is critical.
   Future<String> getCriticalAction() async {
-    var result = await _root.callMethod(
+    final result = await _root.callMethod(
         'org.freedesktop.UPower', 'GetCriticalAction', [],
         replySignature: DBusSignature('s'));
     return (result.returnValues[0] as DBusString).value;
@@ -486,7 +486,7 @@ class UPowerClient {
   /// Terminates the connection to the UPower daemon. If a client remains unclosed, the Dart process may not terminate.
   Future<void> close() async {
     await _displayDevice._close();
-    for (var device in devices) {
+    for (final device in devices) {
       await device._close();
     }
     if (_propertiesChangedSubscription != null) {
@@ -512,7 +512,7 @@ class UPowerClient {
   }
 
   Future<List<DBusObjectPath>> _enumerateDevices() async {
-    var result = await _root.callMethod(
+    final result = await _root.callMethod(
         'org.freedesktop.UPower', 'EnumerateDevices', [],
         replySignature: DBusSignature('ao'));
     return (result.returnValues[0] as DBusArray)
@@ -522,14 +522,14 @@ class UPowerClient {
   }
 
   Future<void> _deviceAdded(DBusObjectPath path) async {
-    var device = UPowerDevice(_bus, path);
+    final device = UPowerDevice(_bus, path);
     await device._connect();
     _devices[path] = device;
     _deviceAddedController.add(device);
   }
 
   void _deviceRemoved(DBusObjectPath path) {
-    var device = _devices[path];
+    final device = _devices[path];
     if (device == null) {
       return;
     }
